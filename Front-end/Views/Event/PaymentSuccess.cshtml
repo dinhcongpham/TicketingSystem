@@ -1,0 +1,142 @@
+﻿@model Front_end.Models.ViewModels.PaymentSuccessViewModel
+
+@{
+    ViewData["Title"] = "Payment Successful";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Payment Successful!
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    <!-- Success Animation -->
+                    <div class="success-animation mb-4">
+                        <div class="checkmark-circle">
+                            <div class="checkmark"></div>
+                        </div>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div class="alert alert-success" role="alert">
+                        <h4 class="alert-heading">Congratulations!</h4>
+                        <p class="mb-0">@Model.Message</p>
+                    </div>
+
+                    <!-- Payment Details -->
+                    @if (Model.PaymentId.HasValue)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Payment Details</h5>
+                                        <p class="card-text">
+                                            <strong>Payment ID:</strong> @Model.PaymentId
+                                        </p>
+                                        <p class="card-text">
+                                            <strong>Payment Date:</strong> @DateTime.Now.ToString("MMM dd, yyyy HH:mm")
+                                        </p>
+                                        <small class="text-muted">
+                                            Please save this payment ID for your records.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Next Steps -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>What's Next?</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <i class="fas fa-envelope fa-2x text-primary mb-3"></i>
+                                            <h6>Check Your Email</h6>
+                                            <p class="small text-muted">
+                                                A confirmation email with your ticket details has been sent to your email address.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <i class="fas fa-ticket-alt fa-2x text-success mb-3"></i>
+                                            <h6>Event Day</h6>
+                                            <p class="small text-muted">
+                                                Present your ticket (digital or printed) at the venue entrance on the event day.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-home me-2"></i>
+                                Back to Home
+                            </a>
+                            <a href="@Url.Action("Index", "Event")" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-calendar me-2"></i>
+                                Browse More Events
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .success-animation {
+        margin: 20px 0;
+    }
+
+    .checkmark-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #28a745;
+        margin: 0 auto;
+        position: relative;
+        animation: scaleIn 0.8s ease-in-out;
+    }
+
+    .checkmark {
+        width: 25px;
+        height: 40px;
+        border: solid white;
+        border-width: 0 4px 4px 0;
+        transform: rotate(45deg);
+        position: absolute;
+        top: 15px;
+        left: 28px;
+        animation: checkmarkSlide 0.8s ease-in-out 0.5s both;
+    }
+
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+        .card .card-body .card {
+            border: 1px solid #dee2e6;
+        }
+
+    .fa-2x {
+        font-size: 2em;
+    }
+</style>

@@ -1,0 +1,192 @@
+﻿@model Front_end.Models.ViewModels.PaymentViewModel
+
+@{
+    ViewData["Title"] = "Payment - " + Model.Event.Name;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Complete Your Payment</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div id="error-alert" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <!-- Countdown Timer -->
+                    <div class="row mb-4">
+                        <div class="col-12 text-center">
+                            <div class="alert alert-warning">
+                                <h5 class="mb-2">Time Remaining</h5>
+                                <div id="countdown" class="display-4 text-danger">05:00</div>
+                                <small class="text-muted">Please complete your payment before the session expires</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Event Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Event Details</h5>
+                            <p><strong>Event:</strong> @Model.Event.Name</p>
+                            <p><strong>StartDate:</strong> @Model.Event.StartTime.ToString("MMM dd, yyyy")</p>
+                            <p><strong>EndTime:</strong> @Model.Event.EndTime.ToString("MMM dd, yyyy")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Booking Information</h5>
+                            <p><strong>Email:</strong> @Model.Email</p>
+                            <p><strong>Number of Seats:</strong> @Model.NumSeats</p>
+                            <p><strong>Booking ID:</strong> @Model.BookingId</p>
+                        </div>
+                    </div>
+
+                    <!-- Ticket Details -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>Selected Tickets</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Ticket Type</th>
+                                            <th>Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var ticket in Model.BookedTickets)
+                                        {
+                                            <tr>
+                                                <td>@ticket.Index</td>
+                                                <td>$@ticket.Price.ToString("F2")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-active">
+                                            <th>Total Amount</th>
+                                            <th>$@Model.TotalAmount.ToString("F2")</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Button -->
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <form method="post" asp-action="ProcessPayment" asp-route-id="@Model.BookingId" id="payment-form">
+                                <input type="hidden" name="id" value="@Model.BookingId" />
+                                <input type ="hidden" name="email" value="@Model.Email"/>
+                                <input type="hidden" name="numSeats" value="@Model.NumSeats" />
+                                <button type="submit" id="pay-now-btn" class="btn btn-success btn-lg px-5">
+                                    <i class="fas fa-credit-card me-2"></i>
+                                    Pay Now - $@Model.TotalAmount.ToString("F2")
+                                </button>
+                            </form>
+
+
+                            <!-- Expired Message (hidden initially) -->
+                            <div id="expired-message" class="alert alert-danger mt-3" style="display: none;">
+                                <h5><i class="fas fa-exclamation-triangle me-2"></i>Payment Session Expired</h5>
+                                <p>Your payment session has expired. Please go back and create a new booking.</p>
+                                <a href="@Url.Action("Details", "Event", new { id = Model.Event.Id })" class="btn btn-primary">
+                                    Back to Event
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set countdown to 5 minutes (300 seconds)
+        let timeLeft = 300;
+        const countdownElement = document.getElementById('countdown');
+        const payNowBtn = document.getElementById('pay-now-btn');
+        const paymentForm = document.getElementById('payment-form');
+        const expiredMessage = document.getElementById('expired-message');
+
+        function displayTime() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+
+            // Format time as MM:SS
+            const formattedTime =
+                (minutes < 10 ? '0' : '') + minutes + ':' +
+                (seconds < 10 ? '0' : '') + seconds;
+
+            countdownElement.textContent = formattedTime;
+
+            // Change color based on time remaining
+            if (timeLeft <= 60) {
+                countdownElement.className = 'display-4 text-danger';
+            } else if (timeLeft <= 120) {
+                countdownElement.className = 'display-4 text-warning';
+            } else {
+                countdownElement.className = 'display-4 text-danger';
+            }
+        }
+
+        function updateCountdown() {
+            // Decrement first
+            timeLeft--;
+
+            // Still show 00:00 when timeLeft == 0
+            displayTime();
+
+            if (timeLeft < 0) {
+                clearInterval(countdownTimer);
+                payNowBtn.disabled = true;
+                payNowBtn.textContent = 'Payment Session Expired';
+                payNowBtn.className = 'btn btn-secondary btn-lg px-5';
+                paymentForm.style.display = 'none';
+                expiredMessage.style.display = 'block';
+            }
+        }
+
+        // Display initial time immediately
+        displayTime();
+
+        // Update countdown every second
+        const countdownTimer = setInterval(updateCountdown, 1000);
+
+        // Handle form submission
+        paymentForm.addEventListener('submit', function(e) {
+            if (timeLeft <= 0) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Disable button to prevent double submission
+            payNowBtn.disabled = true;
+            payNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        });
+    });
+</script>
+
+<style>
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #countdown {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+    }
+
+    .table-active th {
+        font-size: 1.1em;
+    }
+</style>

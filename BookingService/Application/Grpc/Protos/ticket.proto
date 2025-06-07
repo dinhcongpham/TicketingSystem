@@ -1,0 +1,32 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "GrpcContracts";
+
+package ticket;
+
+message TicketRequest {
+  string eventId = 1;
+  int32 numSeat = 2;
+}
+
+message TicketResponse {
+  repeated Ticket tickets = 1;
+}
+
+message DeleteTicketResponseStatus {
+  bool status = 1;
+}
+
+message Ticket {
+  string id = 1;
+  string eventId = 2;
+  int32 index = 3;
+  int32 price = 4;
+  int32 status = 5;
+  string bookingId = 6;
+}
+
+service TicketService {
+  rpc GetTicketsByEvent (TicketRequest) returns (TicketResponse);
+  rpc DeleteTicketsByEvent (TicketRequest) returns (DeleteTicketResponseStatus);
+}

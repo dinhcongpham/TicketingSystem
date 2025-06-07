@@ -1,0 +1,148 @@
+﻿@using Front_end.Models.DTOs
+@model Front_end.Models.ViewModels.EventDetailsViewModel
+@{
+    ViewData["Title"] = Model.Event.Name;
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h1 class="mb-3" style="font-size: 2.5rem; font-weight: 700;">@Model.Event.Name</h1>
+            <p class="lead text-muted mb-4">@Model.Event.Description</p>
+
+            <div class="card mb-5 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3" style="font-size: 1.5rem; font-weight: 600;">Event Details</h5>
+                    <p class="mb-2"><strong>Start:</strong> @Model.Event.StartTime.ToString("MMM dd, yyyy HH:mm")</p>
+                    <p class="mb-2"><strong>End:</strong> @Model.Event.EndTime.ToString("MMM dd, yyyy HH:mm")</p>
+                    @if (Model.Venue != null)
+                    {
+                        <p class="mb-2"><strong>Venue:</strong> @Model.Venue.Name</p>
+                        <p class="mb-2"><strong>Location:</strong> @Model.Venue.Location</p>
+                        <p class="mb-0"><strong>Capacity:</strong> @Model.Venue.NumSeat seats</p>
+                    }
+                </div>
+            </div>
+
+            <h3 class="mb-4" style="font-size: 1.75rem; font-weight: 600;">Select Tickets</h3>
+            @if (Model.Tickets.Any())
+            {
+                <form method="post" asp-action="Book" asp-route-id="@Model.Event.Id">
+                    <div class="mb-4">
+                        <label for="email" class="form-label fw-medium">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <input type="hidden" name="numSeat" value="@Model.Venue.NumSeat" />
+                    </div>
+
+                    <div class="ticket-grid mb-5">
+                        @foreach (var ticket in Model.Tickets)
+                        {
+                            var statusClass = ticket.Status switch
+                            {
+                                TicketStatus.Available => "ticket-available",
+                                TicketStatus.Reserved => "ticket-onhold",
+                                TicketStatus.Booked => "ticket-booked",
+                                _ => "ticket-available"
+                            };
+
+                            var isDisabled = ticket.Status != TicketStatus.Available;
+
+                            <div class="ticket-item @statusClass">
+                                @if (!isDisabled)
+                                {
+                                    <input type="checkbox" name="selectedTicketIds" value="@ticket.Id" id="ticket-@ticket.Id">
+                                    <label for="ticket-@ticket.Id">
+                                        Seat @ticket.Index<br>
+                                        $@ticket.Price.ToString("F2")
+                                    </label>
+                                }
+                                else
+                                {
+                                    <div class="ticket-unavailable">
+                                        Seat @ticket.Index<br>
+                                        @ticket.Status
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="selected-summary mb-4" id="selectedSummary" style="display: none;">
+                        <h5 class="mb-3" style="font-size: 1.25rem; font-weight: 600;">Selected Tickets</h5>
+                        <div id="selectedList"></div>
+                        <div id="totalAmount" class="mt-2"></div>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-success btn-lg">Proceed to Booking</button>
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-secondary btn-lg">Back to Events</a>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-warning" role="alert">
+                    No tickets available for this event.
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3" style="font-size: 1.25rem; font-weight: 600;">Ticket Legend</h5>
+                    <div class="legend-item">
+                        <span class="legend-color ticket-available"></span>
+                        Available
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color ticket-onhold"></span>
+                        On Hold
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color ticket-booked"></span>
+                        Booked
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('input[name="selectedTicketIds"]');
+            const summary = document.getElementById('selectedSummary');
+            const selectedList = document.getElementById('selectedList');
+            const totalAmount = document.getElementById('totalAmount');
+
+            function updateSummary() {
+                const selected = Array.from(checkboxes).filter(cb => cb.checked);
+
+                if (selected.length > 0) {
+                    summary.style.display = 'block';
+                    let total = 0;
+                    let listHtml = '<ul>';
+
+                    selected.forEach(cb => {
+                        const label = document.querySelector(`label[for="${cb.id}"]`);
+                        const price = parseFloat(label.textContent.match(/\$(\d+\.\d+)/)[1]);
+                        total += price;
+                        listHtml += `<li>${label.textContent.replace(/\n/g, ' - ')}</li>`;
+                    });
+
+                    listHtml += '</ul>';
+                    selectedList.innerHTML = listHtml;
+                    totalAmount.innerHTML = `<strong>Total: $${total.toFixed(2)}</strong>`;
+                } else {
+                    summary.style.display = 'none';
+                }
+            }
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateSummary);
+            });
+        });
+    </script>
+}

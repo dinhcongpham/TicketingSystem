@@ -1,0 +1,9 @@
+@RootURL = http://localhost:5155
+
+### get all payment entrys
+GET {{RootURL}}/payment
+Accept: application/json
+
+### get payment by ID
+GET {{RootURL}}/payment/{id}
+Accept: application/json

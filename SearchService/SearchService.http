@@ -1,0 +1,17 @@
+@RootURL = http://localhost:5155
+
+### create index
+POST {{RootURL}}/event/search/index
+Content-Type: application/json
+Accept: application/json
+
+
+### search with search term containing "Tech"
+GET {{RootURL}}/event/search?query=&page=2&size=10
+
+Accept: application/json
+
+
+### search with search term date
+GET {{RootURL}}/event/search?startDate=2025-06-01
+Accept: application/json  

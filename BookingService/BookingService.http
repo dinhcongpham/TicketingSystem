@@ -1,0 +1,9 @@
+@RootURL = http://localhost:5155
+
+### Get ticket by ID
+GET {{RootURL}}/ticket/{id}
+Accept: application/json
+
+### Get all booking entrys
+GET {{RootURL}}/booking
+Accept: application/json

@@ -1,0 +1,52 @@
+@RootURL = http://localhost:5155
+
+### Get all events
+GET {{RootURL}}/event
+Accept: application/json
+
+###
+GET {{RootURL}}/venue/{1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d}
+
+### Get event by ID
+GET {{RootURL}}/event/{904274ad-4dd4-4295-8bdc-5bc5f7aca388}
+Accept: application/json
+
+###
+
+### Create new event
+POST {{RootURL}}/event
+Content-Type: application/json
+Accept: application/json
+
+{
+  "nameEvent": "Tech Conference 2025 2026 Guru Google Alphabet",
+  "description": "Annual tech innovation event",
+  "startTime": "2025-07-10T09:00:00Z",
+  "endTime": "2025-07-10T17:00:00Z",
+  "nameVenue": "Convention Center",
+  "location": "123 Main St",
+  "numSeat": 10
+}
+
+###
+
+### Update event
+PUT {{RootURL}}/event/{id}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "nameEvent": "Tech Conference 2025 - Updated",
+  "description": "Updated description",
+  "startTime": "2025-07-10T10:00:00Z",
+  "endTime": "2025-07-10T18:00:00Z",
+  "nameVenue": "Convention Center Hall B",
+  "location": "123 Main St, Suite B",
+  "numSeat": 10
+}
+
+###
+
+### Delete event
+DELETE {{RootURL}}/event/{}
+Accept: application/json
