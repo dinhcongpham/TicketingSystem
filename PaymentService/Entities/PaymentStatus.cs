@@ -11,6 +11,7 @@ namespace PaymentService.Entities
         Processing,
         Paid,
         Failed,
-        Refunded
+        Refunded,
+        Expired,
     }
 }

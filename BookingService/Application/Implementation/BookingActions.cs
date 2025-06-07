@@ -42,8 +42,8 @@ namespace BookingService.Application.Implementation
             }
             catch (Exception ex)
             {
-                // Log exception
-                return null;
+                _logger.LogError(ex, "Error retrieving all booking entries");
+                return new List<Booking>();
             }
         }   
 
@@ -103,7 +103,7 @@ namespace BookingService.Application.Implementation
                     };
                 }
 
-                // Phase 3: Send booking created message to payment service via Kafka
+                // Send booking created message to payment service via Kafka
                 var totalAmount = request.ListTicketsId.Count * 10000;
                 var bookingCreatedMessage = new BookingCreatedMessage
                 {
@@ -147,7 +147,8 @@ namespace BookingService.Application.Implementation
             }
             catch (Exception ex)
             {
-                return null;
+                _logger.LogError(ex, "Error creating booking entry for request: {@Request}", request);
+                return new Booking();
             }
         }
 
@@ -159,7 +160,8 @@ namespace BookingService.Application.Implementation
             }
             catch (Exception ex)
             {
-                return null;
+                _logger.LogError(ex, "Error retrieving booking by ID: {BookingId}", bookingId);
+                return new Booking();
             }
         }
 
@@ -172,7 +174,7 @@ namespace BookingService.Application.Implementation
                 {
                     return;
                 }
-                // Get booking
+
                 var booking = await GetBookingById(message.BookingId);
                 if (booking == null)
                 {
@@ -202,7 +204,7 @@ namespace BookingService.Application.Implementation
             }
             catch (Exception ex)
             {
-                throw;
+                _logger.LogError(ex, "Error handling payment success for booking ID: {BookingId}", message.BookingId);
             }
         }
 
@@ -218,10 +220,15 @@ namespace BookingService.Application.Implementation
                 foreach (var booking in expiredBookings)
                 {
                     await HandleExpiredBooking(booking.Id);
+                    await _kafkaProducer.PublishAsync(KafkaTopic.BookingExprired.ToString(), new BookingExpiredMessage
+                    {
+                        BookingId = booking.Id,
+                    });
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error handling expired reservations: {Message}", ex.Message);
             }
         }
 
@@ -244,6 +251,7 @@ namespace BookingService.Application.Implementation
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error handling expired booking for ID: {BookingId}", bookingId);
             }
         }
 
@@ -257,7 +265,7 @@ namespace BookingService.Application.Implementation
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, "Error during reservation cleanup for tickets: {TicketIds}", string.Join(", ", ticketIds));
             }
         }
     }

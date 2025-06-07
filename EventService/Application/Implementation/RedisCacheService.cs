@@ -15,8 +15,15 @@ namespace EventService.Application.Implementation
 
         public async Task<T?> GetAsync<T>(string key)
         {
-            var value = await _db.StringGetAsync(key);
-            return value.HasValue ? JsonSerializer.Deserialize<T>(value!) : default;
+            try
+            {
+                var value = await _db.StringGetAsync(key);
+                return value.HasValue ? JsonSerializer.Deserialize<T>(value!) : default;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting cache for key {key}: {ex.Message}", ex);
+            }
         }
 
         public async Task<bool> ExistsAsync(string key)
@@ -33,13 +40,27 @@ namespace EventService.Application.Implementation
 
         public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null)
         {
-            var json = JsonSerializer.Serialize(value);
-            await _db.StringSetAsync(key, json, expiry);
+            try
+            {
+                var json = JsonSerializer.Serialize(value);
+                await _db.StringSetAsync(key, json, expiry);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error setting cache for key {key}: {ex.Message}", ex);
+            }
         }
 
         public async Task RemoveAsync(string key)
         {
-            await _db.KeyDeleteAsync(key);
+            try
+            {
+                await _db.KeyDeleteAsync(key);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error removing cache for key {key}: {ex.Message}", ex);
+            }
         }
     }
 }

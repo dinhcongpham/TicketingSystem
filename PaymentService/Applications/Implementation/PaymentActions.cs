@@ -53,6 +53,31 @@ namespace PaymentService.Applications.Implementation
                 throw;
             }
         }
+
+        public async Task HandleBookingExpriedAsync(BookingExpiredMessage message)
+        {
+            try
+            {
+                _logger.LogInformation("Handling booking expired for booking: {BookingId}", message.BookingId);
+                // Get payment by booking ID
+                var payment = await GetPaymentByBookingIdAsync(message.BookingId);
+                if (payment == null)
+                {
+                    _logger.LogWarning("No payment found for booking: {BookingId}", message.BookingId);
+                    return;
+                }
+                // Update payment status to expired
+                payment.Status = PaymentStatus.Expired;
+                await UpdatePaymentAsync(payment);
+                _logger.LogInformation("Payment status updated to expired for booking: {BookingId}, Payment: {PaymentId}",
+                    message.BookingId, payment.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error handling booking expired for booking: {BookingId}", message.BookingId);
+                throw;
+            }
+        }
         public async Task<ProcessPaymentResponse> ProcessPaymentAsync(ProcessPaymentRequest request)
         {
             try

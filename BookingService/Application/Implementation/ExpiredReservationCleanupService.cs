@@ -24,9 +24,9 @@ namespace BookingService.Application.Implementation
                 try
                 {
                     using var scope = _serviceProvider.CreateScope();
-                    var bookingService = scope.ServiceProvider.GetRequiredService<IBookingActions>();
+                    var bookingActions = scope.ServiceProvider.GetRequiredService<IBookingActions>();
 
-                    await bookingService.HandleExpiredReservationsAsync();
+                    await bookingActions.HandleExpiredReservationsAsync();
 
                     await Task.Delay(_interval, stoppingToken);
                 }

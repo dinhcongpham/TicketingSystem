@@ -3,6 +3,7 @@
     public enum KafkaTopic
     {
         BookingCreated,
-        PaymentSuccess
+        PaymentSuccess,
+        BookingExprired
     }
 }

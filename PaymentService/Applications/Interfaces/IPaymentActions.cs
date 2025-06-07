@@ -7,6 +7,7 @@ namespace PaymentService.Applications.Interfaces
     {
         Task<List<Payment>> GetAllPaymentsAsync();
         Task HandleBookingCreatedAsync(BookingCreatedMessage message);
+        Task HandleBookingExpriedAsync(BookingExpiredMessage message);
         Task<ProcessPaymentResponse> ProcessPaymentAsync(ProcessPaymentRequest request);
         Task<Payment> GetPaymentByBookingIdAsync(Guid bookingId);
         Task<Payment> CreatePaymentAsync(BookingCreatedMessage message);

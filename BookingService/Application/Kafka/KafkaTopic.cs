@@ -4,6 +4,7 @@
     {
         EventCreated,
         BookingCreated,
-        PaymentSuccess
+        PaymentSuccess,
+        BookingExprired
     }
 }
