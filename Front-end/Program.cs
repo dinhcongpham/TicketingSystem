@@ -1,4 +1,5 @@
 using Front_end.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +29,8 @@ builder.Services.AddHttpClient<IApiService, ApiService>(client =>
     }
 });
 builder.Services.AddScoped<IApiService, ApiService>();
+builder.Services.AddScoped<ApiEndpoints>();
+builder.Services.AddScoped<ApiUrlBuilder>();
 
 
 var app = builder.Build();

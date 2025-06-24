@@ -10,21 +10,26 @@ namespace Front_end.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
-        private readonly string _baseUrl;
         private readonly ILogger<ApiService> _logger;
+        private readonly ApiUrlBuilder _apiUrlBuilder;
 
-        public ApiService(HttpClient httpClient, IConfiguration configuration, ILogger<ApiService> logger)
+        public ApiService(
+            HttpClient httpClient, 
+            IConfiguration configuration, 
+            ILogger<ApiService> logger,
+            ApiUrlBuilder apiUrlBuilder)
         {
             _httpClient = httpClient;
             _configuration = configuration;
-            _baseUrl = _configuration["ApiGateway:BaseUrl"] ?? throw new InvalidOperationException("ApiGateway:BaseUrl not configured");
             _logger = logger;
             _httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            _apiUrlBuilder = apiUrlBuilder;
         }
 
         public async Task<List<EventDto>> GetEventsAsync()
         {
-            var response = await _httpClient.GetAsync($"{_baseUrl}/event");
+            var url = _apiUrlBuilder.Build(ApiEndpoints.Event.GetAll);
+            var response = await _httpClient.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
@@ -53,7 +58,8 @@ namespace Front_end.Services
             queryParams.Add($"pageSize={pageSize}");
 
             var queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-            var response = await _httpClient.GetAsync($"{_baseUrl}/event/search{queryString}");
+            var url = _apiUrlBuilder.Build(ApiEndpoints.Event.Search);
+            var response = await _httpClient.GetAsync($"{url}{queryString}");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -67,7 +73,8 @@ namespace Front_end.Services
 
         public async Task<EventDto?> GetEventByIdAsync(Guid eventId)
         {
-            var response = await _httpClient.GetAsync($"{_baseUrl}/event/{eventId}");
+            var url = _apiUrlBuilder.Build(ApiEndpoints.Event.GetById(eventId));
+            var response = await _httpClient.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
@@ -78,7 +85,8 @@ namespace Front_end.Services
 
         public async Task<VenueDto> GetVenueByEventIdAsync(Guid venueId)
         {
-            var response = await _httpClient.GetAsync($"{_baseUrl}/venue/{venueId}");
+            var url = _apiUrlBuilder.Build(ApiEndpoints.Venue.GetById(venueId));
+            var response = await _httpClient.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
@@ -89,7 +97,8 @@ namespace Front_end.Services
 
         public async Task<List<TicketDto>> GetTicketsByEventIdAsync(Guid eventId)
         {
-            var response = await _httpClient.GetAsync($"{_baseUrl}/tickets/event/{eventId}");
+            var url = _apiUrlBuilder.Build(ApiEndpoints.Ticket.GetByEventId(eventId));
+            var response = await _httpClient.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
@@ -100,7 +109,8 @@ namespace Front_end.Services
 
         public async Task<TicketDto?> GetTicketByIdAsync(Guid id)
         {
-            var response = await _httpClient.GetAsync($"{_baseUrl}/ticket/{id}");
+            var url = _apiUrlBuilder.Build(ApiEndpoints.Ticket.GetById(id));
+            var response = await _httpClient.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
@@ -122,7 +132,8 @@ namespace Front_end.Services
             // Serialize the anonymous object to JSON and wrap it in StringContent
             var content = new StringContent(JsonConvert.SerializeObject(bookingRequest), Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{_baseUrl}/booking/reserve", content);
+            var url = _apiUrlBuilder.Build(ApiEndpoints.Booking.Reserve);
+            var response = await _httpClient.PostAsync(url, content);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -150,7 +161,8 @@ namespace Front_end.Services
 
             var content = new StringContent(JsonConvert.SerializeObject(processRequest), Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{_baseUrl}/payment/process/{id}", content);
+            var url = _apiUrlBuilder.Build(ApiEndpoints.Payment.Process(id));
+            var response = await _httpClient.PostAsync(url, content);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -167,7 +179,8 @@ namespace Front_end.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}/booking/{id}");
+                var url = _apiUrlBuilder.Build(ApiEndpoints.Booking.GetById(id));
+                var response = await _httpClient.GetAsync(url);
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                     return null;
