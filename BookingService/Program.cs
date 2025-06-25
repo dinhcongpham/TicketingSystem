@@ -8,6 +8,7 @@ using BookingService.Data;
 using EventService.Application.Kafka.Interfaces;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 using System.Text.Json.Serialization;
 
@@ -27,7 +28,19 @@ builder.Services.AddDbContext<BookingDbContext>(options =>
     });
 });
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configSection = builder.Configuration.GetRequiredSection("Redis");
+    var connectionString = configSection.GetValue<string>("ConnectionString");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("Redis connection string is not configured.");
+    }
+
+    return ConnectionMultiplexer.Connect(connectionString);
+});
+
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 builder.Services.Configure<KafkaSettings>(

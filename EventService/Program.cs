@@ -23,7 +23,19 @@ builder.Services.AddDbContext<EventDbContext>(options =>
 
 builder.Services.AddScoped<IEventActions, EventActions>();
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configSection = builder.Configuration.GetRequiredSection("Redis");
+    var connectionString = configSection.GetValue<string>("ConnectionString");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("Redis connection string is not configured.");
+    }
+
+    return ConnectionMultiplexer.Connect(connectionString);
+});
+
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 builder.Services.Configure<KafkaSettings>(
@@ -39,12 +51,12 @@ builder.Services.AddHttpClient<ISearchServiceClient, SearchServiceClient>(client
 
 builder.Services.AddGrpc();
 
-// Gọi gRPC Client tới BookingService
+// Call Grpc Client to BookingService
 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
 builder.Services.AddGrpcClient<TicketService.TicketServiceClient>(o =>
 {
-    o.Address = new Uri("http://localhost:5202");
+    o.Address = new Uri(builder.Configuration["Services:BookingService:GrpcUrl"] ?? "http://localhost:5202");
 })
 .ConfigurePrimaryHttpMessageHandler(() =>
 {

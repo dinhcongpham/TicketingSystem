@@ -25,8 +25,8 @@ namespace Front_end.Controllers
                 return NotFound();
             }
 
-            var tickets = await _apiService.GetTicketsByEventIdAsync(id);
             var venue = await _apiService.GetVenueByEventIdAsync(id);
+            var tickets = await _apiService.GetTicketsByEventIdAsync(id, venue.NumSeat);
 
             var viewModel = new EventDetailsViewModel
             {
@@ -112,9 +112,9 @@ namespace Front_end.Controllers
                 }
 
                 // Get ticket details for the booking
-                var allTickets = await _apiService.GetTicketsByEventIdAsync(eventDto.Id);
-                var bookedTickets = allTickets.Where(t => booking.TicketIds.Contains(t.Id)).ToList();
                 var venue = await _apiService.GetVenueByEventIdAsync(eventDto.Id);
+                var allTickets = await _apiService.GetTicketsByEventIdAsync(eventDto.Id, venue.NumSeat);
+                var bookedTickets = allTickets.Where(t => booking.TicketIds.Contains(t.Id)).ToList();
 
                 // Calculate total amount
                 var totalAmount = bookedTickets.Sum(t => t.Price);

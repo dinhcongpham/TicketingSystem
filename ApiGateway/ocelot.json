@@ -64,19 +64,19 @@
       "UpstreamHttpMethod": [ "GET", "POST", "DELETE", "PUT" ],
       "RouteKeys": [ "id" ]
     },
-    {
-      "DownstreamPathTemplate": "/api/event/tickets/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5275
-        }
-      ],
-      "UpstreamPathTemplate": "/tickets/event/{id}",
-      "UpstreamHttpMethod": [ "GET", "POST", "DELETE", "PUT" ],
-      "RouteKeys": [ "id" ]
-    },
+    //{
+    //  "DownstreamPathTemplate": "/api/event/tickets/{id}",
+    //  "DownstreamScheme": "http",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 5275
+    //    }
+    //  ],
+    //  "UpstreamPathTemplate": "/tickets/event/{id}",
+    //  "UpstreamHttpMethod": [ "GET", "POST", "DELETE", "PUT" ],
+    //  "RouteKeys": [ "id" ]
+    //},
     // api booking service
     {
       "DownstreamPathTemplate": "/api/booking",

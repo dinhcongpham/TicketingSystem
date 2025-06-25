@@ -12,14 +12,17 @@ namespace EventService.Controllers
     {
         private readonly EventDbContext _context;
         private readonly IEventActions _eventAction;
+        private readonly ILogger<EventController> _logger;
 
         public EventController(
             EventDbContext context, 
-            IEventActions eventAction
+            IEventActions eventAction,
+            ILogger<EventController> logger
         )
         {
             _context = context;
             _eventAction = eventAction;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -35,7 +38,7 @@ namespace EventService.Controllers
             var eventItem = await _eventAction.GetEventByIdAsync(id);
             if (eventItem == null)
             {
-                Console.WriteLine($"[ERROR] Event with ID {id} not found.");
+                _logger.LogError($"[ERROR] Event with ID {id} not found.");
                 return NotFound();
             }
             return Ok(eventItem);
@@ -47,7 +50,7 @@ namespace EventService.Controllers
             var venue = await _eventAction.GetVenueByEventIdAsync(id);
             if (venue == null)
             {
-                Console.WriteLine($"[ERROR] Venue for event with ID {id} not found.");
+                _logger.LogError($"[ERROR] Venue for event with ID {id} not found.");
                 return NotFound();
             }
             return Ok(venue);
