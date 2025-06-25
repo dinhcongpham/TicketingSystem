@@ -9,15 +9,16 @@ namespace Front_end.Services
     public class ApiService : IApiService
     {
         private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
+        private readonly string _baseUrl;
         private readonly ILogger<ApiService> _logger;
         private readonly ApiUrlBuilder _apiUrlBuilder;
 
-        public ApiService(
-            HttpClient httpClient, 
-            ILogger<ApiService> logger,
-            ApiUrlBuilder apiUrlBuilder)
+        public ApiService(HttpClient httpClient, IConfiguration configuration, ILogger<ApiService> logger)
         {
             _httpClient = httpClient;
+            _configuration = configuration;
+            _baseUrl = _configuration["ApiGateway:BaseUrl"] ?? throw new InvalidOperationException("ApiGateway:BaseUrl not configured");
             _logger = logger;
             _httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             _apiUrlBuilder = apiUrlBuilder;
